@@ -1,0 +1,85 @@
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio-data:/data
+    restart: unless-stopped
+
+  mc:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (mc alias set local http://minio:9000 minioadmin minioadmin123) do sleep 1; done &&
+      mc mb -p local/mlflow-artifacts || true &&
+      mc anonymous set download local/mlflow-artifacts || true &&
+      exit 0
+      "
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: mlflow.Dockerfile
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5050"
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      - --artifacts-destination
+      - s3://mlflow-artifacts
+      - --serve-artifacts
+    environment:
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin123
+      AWS_REGION: us-east-1
+      AWS_S3_FORCE_PATH_STYLE: "true"
+      MLFLOW_S3_ENDPOINT_URL: "http://minio:9000"
+    volumes:
+      - ./state:/mlflow
+    ports:
+      - "5050:5050"
+    depends_on:
+      mc:
+        condition: service_started
+
+  api:
+    # --- Ligne 'platform' supprimée ---
+    # platform: linux/arm64/v8 
+    build: . # Utilise le Dockerfile modifié ci-dessus
+    depends_on:
+      - mlflow 
+      - minio  
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: "http://mlflow:5050"
+      AWS_ACCESS_KEY_ID: "minioadmin"
+      AWS_SECRET_ACCESS_KEY: "minioadmin123"
+      MLFLOW_S3_ENDPOINT_URL: "http://minio:9000"
+      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_REGION: "us-east-1"
+      AWS_S3_FORCE_PATH_STYLE: "true"
+      MODEL_URI: "models:/florisense_model/1" # Gardé pour info
+      CLASSES: ""
+      TOP_K: "5"
+
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./florisense_webapp.html:/usr/share/nginx/html/index.html:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - api

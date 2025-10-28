@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FloriSense | Solution d'Analyse Végétale Intelligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Un bleu-gris très doux */
+        }
+        .header-bg {
+            /* Un dégradé subtil pour le haut de page */
+            background-image: linear-gradient(to right, #1d4ed8, #3b82f6); /* Bleu plus corporate */
+        }
+        .card-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+        .upload-area {
+            border: 2px dashed #93c5fd; /* Bleu plus clair */
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        .upload-area.dragover {
+            border-color: #1d4ed8; /* Bleu vif */
+            background-color: #eff6ff; /* Bleu très clair */
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="header-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold tracking-tight cursor-pointer" onclick="navigate('home')">
+                FloriSense <span class="text-blue-200 text-sm font-light">Opérationnel</span>
+            </div>
+            <nav>
+                <button id="navHome" class="px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition duration-150" onclick="navigate('home')">
+                    Présentation
+                </button>
+                <button id="navApp" class="px-4 py-2 rounded-lg font-medium bg-blue-500 hover:bg-blue-600 transition duration-150 ml-3" onclick="navigate('app')">
+                    Accès Rapide à l'Analyse
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-12 md:py-16">
+        <div id="homePage" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <section class="mb-16">
+                <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+                    L'Image Vaut Mille Décisions. <br class="hidden sm:inline"> Obtenez la Bonne en Moins d'une Seconde.
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-10">
+                    Arrêtez de deviner. FloriSense est votre outil de classification d'images pour distinguer rapidement les mauvaises herbes (Pissenlit) de la bonne herbe. Fiabilité opérationnelle garantie par un pipeline MLOps industrialisé.
+                </p>
+                <button class="bg-green-500 text-white font-bold py-3 px-8 rounded-xl text-lg hover:bg-green-600 transition duration-300 transform hover:scale-105 card-shadow" onclick="navigate('app')">
+                    Démarrer le Diagnostic Immédiat →
+                </button>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-green-500">
+                    <div class="text-3xl text-green-500 mb-3">⏱️</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Efficacité Maximale</h3>
+                    <p class="text-gray-600">Le temps, c'est de l'argent. Notre solution fournit un verdict en temps réel. Accélérez vos processus d'inspection et de maintenance.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-green-500">
+                    <div class="text-3xl text-green-500 mb-3">🎯</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Fiabilité MLOps</h3>
+                    <p class="text-gray-600">Grâce au suivi continu (MLflow) et au déploiement automatisé (CI/CD), la précision de notre modèle est toujours optimisée et documentée.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-green-500">
+                    <div class="text-3xl text-green-500 mb-3">🛠️</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Intégration Simple</h3>
+                    <p class="text-gray-600">Conçu comme un microservice Dockerisé, notre moteur de prédiction s'intègre facilement à n'importe quel système existant.</p>
+                </div>
+            </section>
+        </div>
+
+        <div id="appPage" class="hidden flex items-center justify-center p-4">
+            <div class="w-full max-w-lg bg-white rounded-xl p-6 md:p-10 card-shadow">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">
+                    Module de Diagnostic Rapide
+                </h2>
+                <p class="text-center text-gray-500 mb-8">
+                    Téléchargez une image pour un diagnostic précis : Pissenlit ou Herbe.
+                </p>
+
+                <div id="uploadContainer" class="mb-6">
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">
+                    <label for="imageInput" id="dropArea" class="upload-area flex flex-col items-center justify-center h-48 rounded-lg cursor-pointer p-4">
+                        <img id="imagePreview" class="max-h-full max-w-full rounded-lg object-contain hidden mb-3">
+                        <div id="dropText" class="text-center">
+                            <svg class="mx-auto h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 014 4v2a4 4 0 00.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 014 4v2"></path>
+                            </svg>
+                            <p class="mt-1 text-sm text-gray-600 font-semibold">
+                                Glissez l'image ici ou cliquez pour sélectionner.
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">Classification binaire : Pissenlit (Action Requise) vs Herbe (OK)</p>
+                        </div>
+                    </label>
+                </div>
+
+                <button id="predictButton" disabled class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 opacity-50 cursor-not-allowed hover:bg-blue-700" onclick="handlePrediction()">
+                    Obtenir le Verdict Immédiat
+                </button>
+
+                <div id="loadingIndicator" class="hidden mt-4 text-center">
+                    <svg class="animate-spin h-5 w-5 text-blue-600 inline-block mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Analyse en cours par le moteur MLOps...
+                </div>
+
+                <div id="resultCard" class="hidden mt-6 p-4 rounded-xl border-l-4">
+                    <h3 class="text-xl font-semibold mb-2">Verdict FloriSense :</h3>
+                    <p id="predictionText" class="text-3xl font-extrabold"></p>
+                    <p id="confidenceText" class="text-sm mt-1"></p>
+                </div>
+
+                <div id="messageBox" class="hidden mt-4 p-3 rounded-lg border">
+                    </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // L'URL de l'API de prédiction fournie par le back-end
+        // ===============================================
+        // === CHANGEMENT 1 : URL DE L'API LOCALE ===
+        // ===============================================
+        const API_BASE_URL = 'http://localhost:8000';
+        const PREDICT_ENDPOINT = '/predict'; // Assurez-vous que c'est bien la route de votre API
+
+        // ===============================================
+        // VARIABLES ET ÉLÉMENTS DU DOM
+        // ===============================================
+
+        const homePage = document.getElementById('homePage');
+        const appPage = document.getElementById('appPage');
+        const navHome = document.getElementById('navHome');
+        const navApp = document.getElementById('navApp');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const dropArea = document.getElementById('dropArea');
+        const dropText = document.getElementById('dropText');
+        const predictButton = document.getElementById('predictButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultCard = document.getElementById('resultCard');
+        const predictionText = document.getElementById('predictionText');
+        const confidenceText = document.getElementById('confidenceText');
+        const messageBox = document.getElementById('messageBox');
+        let selectedFile = null;
+        let currentPage = 'home';
+
+        // ===============================================
+        // GESTION DE LA NAVIGATION
+        // ===============================================
+
+        function navigate(page) {
+            currentPage = page;
+
+            homePage.classList.toggle('hidden', page !== 'home');
+            appPage.classList.toggle('hidden', page !== 'app');
+
+            navHome.classList.toggle('bg-blue-500', page === 'home');
+            navHome.classList.toggle('bg-blue-600', page === 'home');
+            navApp.classList.toggle('bg-blue-500', page === 'app');
+            navApp.classList.toggle('bg-blue-600', page === 'app');
+            navHome.classList.toggle('bg-transparent', page !== 'home');
+            navApp.classList.toggle('bg-transparent', page !== 'app');
+            
+            if (page === 'app') {
+                appPage.classList.add('flex');
+            } else {
+                appPage.classList.remove('flex');
+            }
+        }
+        
+        navigate('home');
+
+        // ===============================================
+        // FONCTIONS UTILITAIRES DE L'APPLICATION
+        // ===============================================
+
+        function showMessage(text, type = 'info') {
+            let bgColor, textColor, borderColor;
+            
+            if (type === 'error') {
+                bgColor = 'bg-red-100';
+                textColor = 'text-red-700';
+                borderColor = 'border-red-300';
+            } else if (type === 'success') {
+                bgColor = 'bg-green-100';
+                textColor = 'text-green-700';
+                borderColor = 'border-green-300';
+            } else { // info
+                bgColor = 'bg-blue-100';
+                textColor = 'text-blue-700';
+                borderColor = 'border-blue-300';
+            }
+            
+            messageBox.textContent = text;
+            messageBox.className = `mt-4 p-3 rounded-lg border ${bgColor} ${textColor} ${borderColor}`;
+            messageBox.classList.remove('hidden');
+        }
+
+        function updatePreview(file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                dropText.classList.add('hidden');
+                predictButton.disabled = false;
+                predictButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            };
+            reader.readAsDataURL(file);
+            messageBox.classList.add('hidden');
+            resultCard.classList.add('hidden');
+        }
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updatePreview(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop Handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                updatePreview(files[0]);
+            }
+        }, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // (On n'a plus besoin de convertir en Base64)
+        // function convertFileToBase64(file) { ... }
+
+        // ===============================================
+        // INTÉGRATION API MLOPS (La connexion réelle)
+        // ===============================================
+        
+        // ======================================================================
+        // === CHANGEMENT 2 : ENVOI DE FORMDATA (FICHIER) AU LIEU DE JSON ===
+        // ======================================================================
+        
+        async function callYourRealAPI(file) { // On passe l'objet Fichier
+            const fullUrl = API_BASE_URL + PREDICT_ENDPOINT;
+            
+            const formData = new FormData();
+            // Le nom "file" doit correspondre au nom de l'argument dans FastAPI
+            // @app.post("/predict")
+            // async def predict(file: UploadFile = File(...)):
+            formData.append("file", file);
+            
+            try {
+                // Utilisation de fetch pour envoyer la requête POST à l'API ML
+                const response = await fetch(fullUrl, { 
+                    method: 'POST',
+                    // PAS de header 'Content-Type' !
+                    // Le navigateur le mettra automatiquement en "multipart/form-data"
+                    // quand il envoie un objet FormData.
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    // Tente de lire le corps de l'erreur pour un meilleur diagnostic
+                    let errorMessage = `Erreur HTTP ${response.status}. Vérifiez la console de l'API.`;
+                    try {
+                        const errorBody = await response.json();
+                        if (errorBody && errorBody.detail) {
+                            errorMessage = `Erreur API: ${errorBody.detail}`;
+                        } else if (errorBody && errorBody.message) {
+                            errorMessage = `Erreur API: ${errorBody.message}`;
+                        }
+                    } catch (e) {
+                        // Impossible de lire le JSON de l'erreur
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // Réponse attendue : { "prediction": "...", "confidence": ... }
+                return response.json();
+
+            } catch (error) {
+                // Erreur de connexion pure (DNS, CORS, serveur Docker éteint)
+                console.error("Erreur de Fetch (Connexion Réseau):", error);
+                throw new Error(`Échec de la connexion à l'API (${fullUrl}). Le microservice API est-il lancé ? (docker-compose up api)`);
+            }
+        }
+        
+        // ===============================================
+        // FONCTION PRINCIPALE DE PRÉDICTION
+        // ===============================================
+
+        async function handlePrediction() {
+            if (!selectedFile) {
+                showMessage("Veuillez d'abord sélectionner une image.", 'error');
+                return;
+            }
+
+            loadingIndicator.classList.remove('hidden');
+            predictButton.disabled = true;
+            resultCard.classList.add('hidden');
+            messageBox.classList.add('hidden');
+
+            try {
+                // On n'a plus besoin de convertir en base64
+                // const base64Image = await convertFileToBase64(selectedFile);
+
+                // --- CONNEXION RÉELLE À L'API ---
+                // On passe l'objet 'selectedFile' (le Fichier) directement
+                const apiResponse = await callYourRealAPI(selectedFile); 
+                
+                // Vérification du format de la réponse
+                if (!apiResponse || typeof apiResponse.prediction === 'undefined' || typeof apiResponse.confidence === 'undefined') {
+                    throw new Error("La réponse de l'API est invalide. Vérifiez que l'API retourne { 'prediction', 'confidence' }.");
+                }
+
+                displayResult(apiResponse.prediction, apiResponse.confidence);
+
+            } catch (error) {
+                console.error("Erreur MLOps complète:", error);
+                showMessage(`Problème d'analyse : ${error.message}`, 'error');
+                resultCard.classList.add('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                predictButton.disabled = false;
+            }
+        }
+
+        // ===============================================
+        // AFFICHAGE DES RÉSULTATS
+        // ===============================================
+        
+        function displayResult(prediction, confidence) {
+            predictionText.textContent = prediction.toUpperCase();
+            confidenceText.textContent = `Niveau de confiance du système : ${Math.round(confidence * 100)}%`;
+            
+            let colorClass;
+            let resultTextColor;
+
+            // Utilisation des couleurs pour indiquer le statut (Rouge = Problème/Action, Vert = OK)
+            if (prediction.toLowerCase().includes("pissenlit")) {
+                colorClass = 'border-red-500 bg-red-50';
+                resultTextColor = 'text-red-800';
+            } else if (prediction.toLowerCase().includes("herbe")) {
+                colorClass = 'border-green-500 bg-green-50';
+                resultTextColor = 'text-green-800';
+            } else {
+                 colorClass = 'border-blue-500 bg-blue-50';
+                 resultTextColor = 'text-blue-800';
+            }
+
+            resultCard.className = `mt-6 p-4 rounded-xl border-l-4 ${colorClass}`;
+            predictionText.className = `text-3xl font-extrabold ${resultTextColor}`;
+            confidenceText.className = `text-sm mt-1 ${resultTextColor}`;
+
+            resultCard.classList.remove('hidden');
+            showMessage(`Diagnostic obtenu pour ${selectedFile.name}. Connexion API locale OK.`, 'success');
+        }
+
+    </script>
+</body>
+</html>
